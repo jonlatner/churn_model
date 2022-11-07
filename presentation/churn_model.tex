@@ -1,0 +1,343 @@
+\documentclass[xcolor=table]{beamer}
+
+% \rowcolors{1}{gray!30}{gray!10}
+
+\usetheme{Boadilla}
+\usecolortheme{dolphin}
+\useoutertheme[subsection=false]{smoothbars}
+
+\setbeamercolor{frametitle}{fg = black, bg = white} 
+\setbeamercolor{palette primary}{use=structure,fg=white,bg=structure.fg!60!white}
+\setbeamercolor{palette secondary}{use=structure,fg=white,bg=structure.fg!90!white}
+\setbeamercolor{palette tertiary}{use=structure,fg=white,bg=structure.fg!120!white}
+\setbeamercolor{palette quaternary}{use=structure,fg=black,bg=white} %Top bar
+
+\setbeamertemplate{enumerate subitem}[circle]%
+\renewcommand{\insertsubenumlabel}{\alph{enumii}}
+
+\usepackage{amsmath}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage[utf8]{inputenc}
+\usepackage{hyperref}
+\usepackage[table]{xcolor}
+\definecolor{lightgray}{gray}{0.9}
+
+\hypersetup{
+    colorlinks,
+    citecolor=blue,
+    linkcolor=blue
+}
+
+\footnotesize \let\small\footnotesize
+
+\author{Jonathan P. Latner, PhD}
+\title{Build a churn model with the following data}
+\date{\today}
+
+\beamertemplatenavigationsymbolsempty 
+\setbeamerfont{page number in head/foot}{size=\tiny}
+\setbeamertemplate{footline}[frame number]
+\setbeamertemplate{caption}[numbered]
+\setbeamertemplate{section in toc}[sections numbered]
+
+\begin{document}
+
+\section{Introduction}
+\frame{\frametitle{ }
+\titlepage
+\thispagestyle{empty}
+}
+
+\frame{\frametitle{Overview} 
+\tableofcontents[hideallsubsections]
+}
+
+\section{Summary statistics}
+
+\frame{\frametitle{Variables} 
+\vskip -10mm
+\begin{table}[!h]
+    \tiny
+    \caption{}
+    \rowcolors{2}{gray!50}{gray!10}
+    \begin{center}
+        \input{../tables/table_variables.tex}
+        \label{table_variables}
+    \end{center}
+\end{table}
+}
+
+\frame{\frametitle{Missing values}
+Who are the missings $total\_charges$?  Customers in their first month  
+\begin{figure}
+    \caption{}
+    \resizebox{\textwidth}{!}{\includegraphics{../graphs/graph_missing.pdf}}
+    \label{graph_missing}
+\end{figure}
+}
+
+\frame{\frametitle{Customer churn}
+Need to over sample the training dataset because only 27\% churn (DV)
+
+\begin{figure}
+    \caption{}
+    \resizebox{\textwidth}{!}{\includegraphics{../graphs/graph_churn.pdf}}
+    \label{graph_churn}
+\end{figure}
+}
+
+\frame{\frametitle{Customer churn by demographics}
+Households w/o children, single, and seniors more likely to churn
+
+\begin{figure}
+    \caption{}
+    \resizebox{\textwidth}{!}{\includegraphics{../graphs/graph_churn_demographics.pdf}}
+    \label{graph_churn_demographics}
+\end{figure}
+}
+
+\frame{\frametitle{Customer churn by services}
+Households w/ internet, but w/o online services (except streaming) most likely to churn
+
+\begin{figure}
+    \caption{}
+    \resizebox{\textwidth}{!}{\includegraphics{../graphs/graph_churn_services.pdf}}
+    \label{graph_churn_services}
+\end{figure}
+}
+
+\frame{\frametitle{Customer churn by contract type}
+Households w/ monthly contracts, paperless billing (i.e. contact), or electronic checks most likely to churn
+
+\begin{figure}
+    \caption{}
+    \resizebox{\textwidth}{!}{\includegraphics{../graphs/graph_churn_contract_type.pdf}}
+    \label{graph_churn_contract_type}
+\end{figure}
+}
+
+\frame{\frametitle{Customer churn by contract charges}
+Higher monthly charges, lower tenure months, and higher total charges more likely to churn.  
+
+Tenure explains inverse relationship between total charges and churn.
+
+\begin{figure}
+    \caption{}
+    \resizebox{\textwidth}{!}{\includegraphics{../graphs/graph_churn_contract_charges.pdf}}
+    \label{graph_churn_contract_charges}
+\end{figure}
+}
+
+\frame{\frametitle{Multivariate correlation}
+\begin{small}
+High correlation between $tenure\_months$, $monthly\_charges$, $total\_charges$
+
+High correlation between $monthly\_charges$,  $internet\_service\_no$, $internet\_service\_fiber\_optic$
+\end{small}
+
+\vspace{-5 mm}
+\begin{figure}
+    \caption{}
+    \resizebox{\textwidth}{!}{\includegraphics{../graphs/multivaritate_corr_finaldf.pdf}}
+    \label{graph_multivaritate_corr_finaldf}
+\end{figure}
+}
+
+\section{GLM}
+\frame{\frametitle{Variance inflation factors (VIF)} 
+
+\begin{small}
+    Drop $monthly\_charges$, $total\_charges$, $phone\_service$?
+
+    Keep $tenure\_months$?
+\end{small}
+
+\vspace{-5 mm}
+\begin{table}[!h]
+    \tiny
+    \caption{}
+    \rowcolors{2}{gray!50}{gray!10}
+    \begin{center}
+        \input{../tables/table_vif_4.tex}
+        \label{table_vif_3}
+    \end{center}
+\end{table}
+}
+
+\frame{\frametitle{Accuracy} 
+
+\begin{itemize}
+    \item No real gain/loss in accuracy with different GLM model specifications 
+    \item Choose model 4: Drop $monthly\_charges$, $total\_charges$,  $phone\_service$
+        \begin{itemize}
+            \item total charges are a result of monthly charges and tenure 
+            \item Monthly charges are a result of services.
+            \item 90\% of customers have phone service \& no difference in churn
+        \end{itemize}
+\end{itemize}
+
+\begin{table}[!h]
+    % \tiny
+    \caption{}
+    \rowcolors{2}{gray!50}{gray!10}
+    \begin{center}
+        \input{../tables/table_cm_4.tex}
+        \label{table_cm_3}
+    \end{center}
+\end{table}
+}
+
+\section{Compare}
+\frame{\frametitle{Compare training models on test data}
+
+Random forest (RF) is most accurate, but GLM higher true positive (TP)
+
+Choose GLM model
+
+\begin{table}[!h]
+    % \tiny
+    \caption{}
+    \rowcolors{2}{gray!50}{gray!10}
+    \begin{center}
+        \input{../tables/table_cm_compare.tex}
+        \label{table_cm_compare}
+    \end{center}
+\end{table}
+}
+
+\frame{\frametitle{Examine preferred GLM model }
+
+\begin{figure}
+    \caption{Odds ratios}
+    \resizebox{\textwidth}{!}{\includegraphics{../graphs/graph_glm.pdf}}
+    \label{graph_glm}
+\end{figure}
+}
+
+\section{Survival}
+\frame{\frametitle{KM curve}
+
+After 72 months (the max tenure in our data), the company can retain $\approx$ 60\% of its customers.
+
+\begin{figure}
+    \caption{}
+    \resizebox{\textwidth}{!}{\includegraphics{../graphs/km_curve.pdf}}
+    \label{graph_km_curve}
+\end{figure}
+}
+
+\frame{\frametitle{KM curve by internet service}
+
+After 72 months, the company retains 42\% Fiber optic, 72\% DSL, and 90\% without internet.  Is internet not good or too expensive?
+
+\begin{figure}
+    \caption{}
+    \resizebox{\textwidth}{!}{\includegraphics{../graphs/km_curve_internet.pdf}}
+    \label{graph_km_curve_internet}
+\end{figure}
+}
+\frame{\frametitle{KM curve by contract type}
+
+After 72 months, the company retains 13\% month-to-month, 57\% one year contract, and 94\% two year contract
+
+\begin{figure}
+    \caption{}
+    \resizebox{\textwidth}{!}{\includegraphics{../graphs/km_curve_contract.pdf}}
+    \label{graph_km_curve_contract}
+\end{figure}
+}
+
+\frame{\frametitle{KM curve by payment type}
+
+After 72 months, the company retains 29\% electronic check compared to $\approx$ 75\% other forms of payment
+
+\begin{figure}
+    \caption{}
+    \resizebox{\textwidth}{!}{\includegraphics{../graphs/km_curve_payment.pdf}}
+    \label{graph_km_curve_payment}
+\end{figure}
+}
+
+
+
+\frame{\frametitle{Cox proportional hazard (CPH) model}
+
+\begin{figure}
+    \caption{}
+    \resizebox{\textwidth}{!}{\includegraphics{../graphs/cph_coef.pdf}}
+    \label{graph_cph_coef}
+\end{figure}
+}
+
+\section{Segmentation}
+\frame{\frametitle{Customers by all available services}
+\begin{figure}
+    \caption{}
+    \vspace{-5 mm}
+    \resizebox{\textwidth}{!}{\includegraphics{../graphs/graph_customers.pdf}}
+    \label{graph_customers}
+\end{figure}
+}
+
+\frame{\frametitle{Customers by segment}
+Divide into distinct groups using k-means clustering
+
+\begin{figure}
+    \caption{}
+    \vspace{-5 mm}
+    \resizebox{\textwidth}{!}{\includegraphics{../graphs/graph_customers_cluster.pdf}}
+    \label{graph_customers_cluster}
+\end{figure}
+}
+
+\frame{\frametitle{Customer segment group by percent}
+
+\begin{figure}
+    \caption{}
+    \resizebox{\textwidth}{!}{\includegraphics{../graphs/graph_segment.pdf}}
+    \label{graph_segment}
+\end{figure}
+}
+
+\frame{\frametitle{Customer churn by segment group}
+
+2 Segments are most likely to churn
+
+\begin{figure}
+    \caption{}
+    \resizebox{\textwidth}{!}{\includegraphics{../graphs/graph_segment_churn.pdf}}
+    \label{graph_segment_churn}
+\end{figure}
+}
+
+\frame{\frametitle{Customer segmentation analysis} 
+
+\begin{itemize}
+    \item Key point: month-to-month customers are most likely to churn
+    \item 4 distinct groups
+    \item 2 groups with month-to-month most likely to churn
+    \begin{itemize}
+        \item 1 group has fiber optic
+        \item 1 group has no internet
+    \end{itemize}
+    \item 2 groups without month-to-month less likely to churn
+    \begin{itemize}
+        \item 1 group has fiber optic
+        \item 1 group has no internet
+    \end{itemize}
+\end{itemize}
+}
+
+
+\section{Conclusion}
+\frame[c]{\frametitle{}
+\centering
+Thank you
+}
+
+
+
+\end{document}
+
+

@@ -1,2 +1,3 @@
-# churn_model
-Customer churn model
+Q1) Build a churn model with the following data. In your submission, please include all code, any Exploratory Data Analysis, model comparison, evaluation etc. Please also include a presentation deck presenting the results and insights of the analysis to a business audience.
+
+Q2) Imagine you have $100,000 for marketing purposes, how and where would you invest the money (e.g. email campaign, billboard ads etc). How will you measure the success (return of investment) of the marketing budget?
